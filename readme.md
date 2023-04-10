@@ -17,7 +17,7 @@ Contributions are welcome! Feel free to submit pull requests to help improve the
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/searchbot9k.git
+   git clone https://github.com/pale2hall/searchbot9k.git
    ```
 2. Navigate to the project folder:
    ```
