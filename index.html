@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SearchBot9k</title>
+    <style>
+     body {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+#left-pane,
+#right-pane {
+  width: 50%;
+  height:100vh;
+  overflow-y:scroll;
+}
+
+#left-pane {
+  background-color: #008080; /* Windows 95 green background */
+}
+
+#right-pane {
+  background-color: black;
+  margin-left: 20px;
+  color: lime; /* Green text color */
+  overflow-y: scroll;
+  position: relative;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+#left-pane img {
+  width: 100%;
+  height: auto;
+  max-width: calc(100% - 20px); /* Adjust the width to account for the border */
+  border: 10px solid #d5d5c9; /* Beige border */
+  box-sizing: border-box; /* Include border in the element's dimensions */
+  background-color:#222;
+  background-image: url(./spinner.gif);
+  background-size:50% 50%;
+  background-position: center;
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="left-pane">
+      <h2>Web Page</h2>
+      <img id="webpage-image" src="" alt="Web page screenshot" />
+    </div>
+    <div id="right-pane">
+      <h2>ChatGPT Conversation</h2>
+      <pre id="messages"></pre>
+    </div>
+    <script>
+        // Function to scroll to the bottom of the right panel
+function scrollToBottom() {
+  const rightPane = document.getElementById('right-pane');
+  rightPane.scrollTop = rightPane.scrollHeight;
+}
+
+// Call the function to scroll to the bottom on every update
+        window.electron.onUpdateMessages((_, messages) => {
+            document.getElementById("messages").textContent = messages
+            .map((message) => `${message.role}: ${message.content}`)
+            .join("\n\n==========\n\n");
+            scrollToBottom();
+        });
+        window.electron.onUpdateWebPageImage((_, base64Image) => {
+            document.getElementById(
+            "webpage-image"
+            ).src = `data:image/png;base64,${base64Image}`;
+        });
+    </script>
+  </body>
+</html>
