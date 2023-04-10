@@ -6,6 +6,8 @@ SearchBot9k is a simple Electron-based application that spawns a web page and se
 
 Contributions are welcome! Feel free to submit pull requests to help improve the project.
 
+[![Demo Video (No narration)](http://img.youtube.com/vi/hdYn2XcSAek/0.jpg)](http://www.youtube.com/watch?v=hdYn2XcSAek "Demo Video")
+
 ## Prerequisites
 
 - You will need access to the GPT-4 or ChatGPT API.
