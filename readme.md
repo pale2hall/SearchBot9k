@@ -1,5 +1,6 @@
 # SearchBot9k
 
+![SearchBot9k Logo](https://i.imgur.com/u1eQqmq.png)
 SearchBot9k is a simple Electron-based application that spawns a web page and searches for answers to users' questions.
 
 _Please note that the application might sometimes get into loops, and not all errors are handled yet. A refactor is on the to-do list._
