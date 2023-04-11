@@ -14,18 +14,21 @@ if (process.env.DBUG || process.env.OFFLINE)
 
 const sb9k_prompt = `
 == KEEP IN MIND ==
-sb9k, or SearchBot9k is an advanced tool to search the internet.  
-sb9k uses ChatGPT as a backend to provide logic to a script that handles the actual search.  
-sb9k has the following commands avialble:
-\`answer\`, \`navigate\` and \`search\`. 
-sb9k always responds in JSON format with {"answer": "ANSWER", "remember": "New thought to remember"}, {"navigate": "URL", "remember": "New info to remember"}, or {"search": "NEW SEARCH PHRASE", "remember": "New goal to remember"}. 
-sb9k uses memories to keep track of its train of thought.
-sb9k knows to ALWAYS provide fully qualified URLs for links.
-sb9k knows how to use boolean to search more effectively.
-sb9k makes detailed step-by-step plans to find the answer.
-sb9k always adds one {"remember": "New thought to remember" } object to the JSON response so it can keep its train of thought.
-sb9k knows that previous memories will be recanted so it only tells us new memories.
-sb9k can load arbitrary webpages and extract text from them, for example: if sb9k needs to lookup info about something on wikipedia it can load en.wikipedia.org/wiki/Page_Name and extract the text from the page.
+- sb9k, or SearchBot9k is an advanced tool to search the internet.  
+- sb9k uses ChatGPT as a backend to provide logic to a script that handles the actual search.  
+- sb9k has the following commands avialble:
+- \`answer\`, \`navigate\` and \`search\`. 
+- sb9k always responds in JSON format with {"answer": "ANSWER", "remember": "New thought to remember"}, - {"navigate": "URL", "remember": "New info to remember"}, or {"search": "NEW SEARCH PHRASE", "remember": "New - goal to remember"}. 
+- sb9k knows finding obscure information is possible, but requires clicking more links.
+- sb9k knows to click the 'search only for' link when google 'corrects' its search phrase.
+- sb9k uses memories to keep track of its train of thought.
+- sb9k knows to ALWAYS provide fully qualified URLs for links.
+- sb9k knows how to use boolean to search more effectively.
+- sb9k knows not to search the same thing twice in a row on the same search engine, because the results will be the same.
+- sb9k makes detailed step-by-step plans to find the answer.
+- sb9k always adds one {"remember": "New thought to remember" } object to the JSON response so it can keep its - train of thought.
+- sb9k knows that previous memories will be recanted so it only tells us new memories.
+- sb9k can load arbitrary webpages and extract text from them, for example: if sb9k needs to lookup info about - something on wikipedia it can load en.wikipedia.org/wiki/Page_Name and extract the text from the page.
 
 == Sample Memories Format ==
 { "remember": "New idea to remember" }
@@ -34,9 +37,8 @@ sb9k can load arbitrary webpages and extract text from them, for example: if sb9
 - sb9k is asked to look up something obscure
 - sb9k comes up with a search phrase
 - sb9k is provided the results
-- sb9k notices that google 'corrected' its search phrase.
-- sb9k remembers this event.
-- sb9k uses "double quotes" to search for the exact phrase, especially if it thinks google 'corrected' it.
+- sb9k notices that google 'corrected' its search phrase
+- sb9k loads the ' search only for ' link url.
 - sb9k notices it is being blocked by a captcha, so it comes up with a boomer search phrase, or asks to visit - duckduckgo.com/search?q=<phrase>, for example.
 - sb9k loads a page.
 - sb9k doesn't find the answer. [sb9k remembers this event]
@@ -55,19 +57,22 @@ DO NOT send plesantries or anything in markdown.  Only send JSON.  If you need t
 `;
 
 async function chatGPT(messages) {
-  const response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      model: process.env.OPENAI_MODEL,
-      messages,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  const requestFn = () =>
+    axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: process.env.OPENAI_MODEL,
+        messages,
       },
-    }
-  );
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+      }
+    );
+
+  const response = await retryAxiosRequest(requestFn);
 
   const mainWindow = BrowserWindow.getAllWindows()[0];
   // mainWindow.webContents.send('update-messages', messages);
@@ -88,6 +93,7 @@ async function googleSearch(query) {
         const anchor = link.parentElement.parentElement.querySelector("a");
         if (anchor) {
           const url = anchor.href;
+          // TODO remove domain, it's not necessary as the AI can figure it out from URL.
           let domain;
           try {
             domain = new URL(url).hostname;
@@ -132,16 +138,18 @@ async function getPageContent(url) {
     return Array.from(linkNodes)
       .map((link) => {
         const url = link.href;
-      let domain;
-      try {
-        domain = new URL(url).hostname;
-      } catch (error) {
-        console.error("Invalid URL:", url);
-        domain = null;
-      }
+        let domain;
+        try {
+          domain = new URL(url).hostname;
+        } catch (error) {
+          console.error("Invalid URL:", url);
+          domain = null;
+        }
         return { title: link.innerText, url, domain };
       })
-    .filter((link) => link !== null && link.url !== "" && link.domain !== null);
+      .filter(
+        (link) => link !== null && link.url !== "" && link.domain !== null
+      );
   });
 
   screenshot = await page.screenshot({ encoding: "base64" });
@@ -247,12 +255,15 @@ async function createWindow() {
         const pageData = await getPageContent(jsonResponse.navigate);
         next_message =
           next_message +
-          `Here is the 1st 2000 chars of the selected link:\n${truncate(
+          `Here is the first 2000 chars text on the page:\n${truncate(
             pageData.content,
             2000
-          )}\n\nHere are the links on the page:\n${JSON.stringify(
+          )}\n\nHere are the first 1000 chars of links on the page:\n${truncate(JSON.stringify(
+            // TODO, actually parse the links and remove duplicates
+            // Then remove any links that are in the urlHistory
+            // Then remove empty titles and text.
             pageData.links
-          )}`;
+          ), 1000)}`;
       } else {
         console.log("Unknown response", jsonResponse);
       }
@@ -296,6 +307,35 @@ function truncate(text, maxLength) {
     return text;
   }
   return text.substr(0, maxLength - 3) + "...";
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+async function retryAxiosRequest(requestFn, maxRetries = 3) {
+  let retries = 0;
+  let result;
+  let success = false;
+
+  while (!success && retries < maxRetries) {
+    try {
+      result = await requestFn();
+      success = true;
+    } catch (error) {
+      if (error.response && error.response.status === 429) {
+        retries++;
+        await sleep(Math.pow(2, retries) * 1000); // Exponential backoff
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (!success) {
+    throw new Error("Request failed after maximum retries");
+  }
+
+  return result;
 }
 
 app.whenReady().then(createWindow);
