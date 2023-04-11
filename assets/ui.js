@@ -1,11 +1,9 @@
 
-      // Function to scroll to the bottom of the right panel
       function scrollToBottom() {
-        const rightPane = document.getElementById("right-pane");
-        rightPane.scrollTop = rightPane.scrollHeight;
+        const messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
       }
 
-      // Call the function to scroll to the bottom on every update
       window.electron.onUpdateMessages((_, messages) => {
         document.getElementById("messages").innerHTML = messages
           .map(
@@ -15,8 +13,18 @@
           .join("");
         scrollToBottom();
       });
+
       window.electron.onUpdateWebPageImage((_, base64Image) => {
         document.getElementById(
           "webpage-image"
         ).src = `data:image/png;base64,${base64Image}`;
+      });
+
+      window.electron.onUpdateURL((_, url) => {
+        document.getElementById("address_bar").value = url;
+      });
+
+      window.electron.onUpdateAnswer((_, answer) => {
+        document.getElementById("answer-text").innerHTML = answer;
+        document.getElementById("answer").style.zIndex = 9001;
       });
