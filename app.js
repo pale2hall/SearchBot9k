@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer');
 require('dotenv').config()
 const { app, BrowserWindow } = require('electron');
 
-console.log(process.env) // remove this after you've confirmed it is working
 
 //load openai api key form .env
 const sb9k_prompt = ` sb9k, or SearchBot9k is an advanced tool to search the internet.  
@@ -115,13 +114,13 @@ async function createWindow() {
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: true,
-          preload: `${__dirname}/preload.js`,
+          preload: `${__dirname}/assets/preload.js`,
         },
       });
   
       mainWindow.loadFile('index.html');
-      mainWindow.webContents.openDevTools();
-      mainWindow.webContents.on('context-menu', (e) => e.preventDefault());
+      // mainWindow.webContents.openDevTools();
+      // mainWindow.webContents.on('context-menu', (e) => e.preventDefault());
 
       const initialQuestion = process.argv[2];
       // init messages
@@ -136,7 +135,13 @@ async function createWindow() {
       mainWindow.webContents.send('update-messages', messages);
       let answered = false;
       while (!answered){
-        const gptResponse = await chatGPT(messages);
+        let gptResponse = "";
+        if (process.env.OFFLINE){
+          gptResponse = await Promise.resolve('{"search": "how to make a chatbot"}');
+          answered = true;
+        } else {
+          gptResponse = await chatGPT(messages);
+        }
         const jsonResponse = JSON.parse(gptResponse);
 
         messages.push({ role: 'assistant', content: gptResponse  });
@@ -152,6 +157,7 @@ async function createWindow() {
             console.log(`Answer: ${jsonResponse.answer}`);
             next_message = next_message + `Here is the answer: ${jsonResponse.answer}`;
             answered = true;
+            // TODO, tell Electron about the answer being found and spawn an alert message.
         } else if (jsonResponse.search) {
             // search a new query
             console.log(`New search phrase: ${jsonResponse.search}`);
