@@ -42,8 +42,8 @@
         top: 22vh;
         left: 22vw;
         background-color: #d2d2d2;
-    padding: 5px;
-    padding-bottom: 1em;
+        padding: 5px;
+        padding-bottom: 1em;
       }
 
       pre {
@@ -62,22 +62,47 @@
         background-size: 50% 50%;
         background-position: center;
       }
-      #url, .title-bar {
-        background-color: #000080; 
-        color:white;
-        font-weight:bold;
+      #url,
+      .title-bar {
+        background-color: #000080;
+        color: white;
+        font-weight: bold;
       }
-      #messages{
+      #messages {
         background-color: #000;
         color: greenyellow;
         margin-right: 14px;
         max-height: 95%;
         overflow: scroll;
       }
-      #browser, #right-pane{
+      #browser,
+      #right-pane {
         background-color: #d2d2d2;
-    padding: 5px;
-    padding-bottom: 1em;
+        padding: 5px;
+        padding-bottom: 1em;
+      }
+      .role-user,
+      .role-assistant,
+      .role-system {
+        padding: 5px 5px 10px 10px;
+        margin: 5px;
+        border-radius: 5px;
+        background-color: #ffffff21;
+        margin-bottom: 1em;
+        border: 1px solid black;
+        border-width: 0 0 6px 3px;
+      }
+      .role-assistant {
+        color: greenyellow;
+        border-color: greenyellow;
+      }
+      .role-user {
+        color: white;
+        border-color: white;
+      }
+      .role-system {
+        color: #ff7f00;
+        border-color: #ff7f00;
       }
     </style>
   </head>
@@ -91,8 +116,11 @@
       </div>
     </div>
     <div id="right-pane">
-        <div class="title-bar"> <img src="./spinner.gif" style="height:1.5em;width:auto;"> ChatGPT Message Log</div>
-            
+      <div class="title-bar">
+        <img src="./spinner.gif" style="height: 1.5em; width: auto" /> ChatGPT
+        Message Log
+      </div>
+
       <pre id="messages"></pre>
     </div>
     <script>
@@ -104,9 +132,12 @@
 
       // Call the function to scroll to the bottom on every update
       window.electron.onUpdateMessages((_, messages) => {
-        document.getElementById("messages").textContent = messages
-          .map((message) => `${message.role}: ${message.content}`)
-          .join("\n\n==========\n\n");
+        document.getElementById("messages").innerHTML = messages
+          .map(
+            (message) =>
+              `<div class="role-${message.role}">${message.role}: ${message.content}</div>`
+          )
+          .join("");
         scrollToBottom();
       });
       window.electron.onUpdateWebPageImage((_, base64Image) => {

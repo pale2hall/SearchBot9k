@@ -1,10 +1,14 @@
 # SearchBot9k
 
-SearchBot9k is a simple Electron-based application that spawns a web page and searches for answers to users' questions. 
+SearchBot9k is a simple Electron-based application that spawns a web page and searches for answers to users' questions.
 
-*Please note that the application might sometimes get into loops, and not all errors are handled yet. A refactor is on the to-do list.*
+_Please note that the application might sometimes get into loops, and not all errors are handled yet. A refactor is on the to-do list._
 
 Contributions are welcome! Feel free to submit pull requests to help improve the project.
+
+![SearchBot9k Demo](https://i.imgur.com/hLiz5i0.png)
+
+## Demo Video
 
 [![Demo Video (No narration)](http://img.youtube.com/vi/hdYn2XcSAek/0.jpg)](http://www.youtube.com/watch?v=hdYn2XcSAek "Demo Video")
 
@@ -54,4 +58,4 @@ Pull requests are welcome! If you have any ideas for improvements, bug fixes, or
 
 ## Larry's Lazy License
 
-I have not yet determined a license yet.  I hold rights to the language of the actual prompt and the name SearchBot9k, but you can feel free to use the code here unless and until I figure out the legalities and pick a license, then you will have to follow that license from that point forward with future versions of the code / prompt.
+I have not yet determined a license yet. I hold rights to the language of the actual prompt and the name SearchBot9k, but you can feel free to use the code here unless and until I figure out the legalities and pick a license, then you will have to follow that license from that point forward with future versions of the code / prompt.

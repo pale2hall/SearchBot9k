@@ -138,10 +138,13 @@ async function createWindow() {
       while (!answered){
         const gptResponse = await chatGPT(messages);
         const jsonResponse = JSON.parse(gptResponse);
+
+        messages.push({ role: 'assistant', content: gptResponse  });
+
         let next_message = "";
 
         if (jsonResponse.remember) {
-            next_message = `==== \nsb9k wants to remember: ${jsonResponse.remember} \n\n====`;
+            next_message = `\n==== \nsb9k wants to remember: \n${jsonResponse.remember} \n====\n\n`;
         }
         
         if (jsonResponse.answer) {
