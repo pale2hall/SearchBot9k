@@ -41,7 +41,7 @@ To start the application, simply run the following command in your terminal:
 npm start -- "search query here"
 ```
 
-This will launch the Electron application and open a web page where you can enter your queries and search for answers.
+This will launch the Electron application and open a web page where you watch ChatGPT build your queries and search for answers.
 
 ## Contributing
 
