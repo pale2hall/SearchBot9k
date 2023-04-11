@@ -66,7 +66,7 @@ async function googleSearch(query) {
       const linkNodes = document.querySelectorAll('.tF2Cxc h3, .card-section');
       return Array.from(linkNodes).map((link) => {
         const anchor = link.parentElement.parentElement.querySelector('a');
-        const url = anchor.href;
+        const url    = anchor.href;
         const domain = new URL(url).hostname;
         return { title: link.innerText, url, domain };
       });
@@ -159,15 +159,15 @@ async function createWindow() {
             answered = true;
             // TODO, tell Electron about the answer being found and spawn an alert message.
         } else if (jsonResponse.search) {
-            // search a new query
-            console.log(`New search phrase: ${jsonResponse.search}`);
-            const serp = await googleSearch(jsonResponse.search);
-            next_message =  next_message +
-            `Here's the content of the page:\n
-            ${serp.content}
-        \n\n
-            Here are the search results:\n${serp.links.map((link, index) => `[${index + 1}] ${link.title} (${link.domain})`).join('\n')}`;
-        } else if (jsonResponse.navigate) {
+              // search a new query
+              console.log(`New search phrase: ${jsonResponse.search}`);
+              const serp = await googleSearch(jsonResponse.search);
+              next_message =  next_message +
+              `Here's the content of the page:\n
+              ${serp.content}
+          \n\n
+              Here are the search results:\n${JSON.stringify(serp.links, null, 2)}`;
+          } else if (jsonResponse.navigate) {
             
             console.log(`Link: ${jsonResponse.navigate}`);
             const pageContent = await getPageContent(jsonResponse.navigate);
