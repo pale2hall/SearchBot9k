@@ -1,0 +1,85 @@
+
+html,
+body {
+  background: linear-gradient(45deg, #0142cd 0%, #2babe2 100%);
+  width: 100%;
+  height: 100%;
+  font-family: "MS Sans Serif", 'Microsoft Sans Serif', Geneva, sans-serif;
+  overflow: hidden;
+}
+body{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px;
+    justify-content: space-between;
+}
+div{
+    box-sizing: border-box;
+}
+#left-pane, #right-pane, #answer {
+  border-radius: 5px;
+}
+
+#left-pane{
+    grid-row: 1 / span 3;
+    background-color:grey;
+}
+
+
+#right-pane{
+    grid-row: 2 / span 2;
+    grid-column: 2;
+    overflow-y: scroll;
+    background-color:black;
+    color:white;
+}
+
+#answer{
+    grid-row: 1;
+    grid-column: 2 / span 2;
+    background-color:white;
+    color:black;
+}
+
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+#left-pane img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  box-sizing: border-box; /* Include border in the element's dimensions */
+}
+#address_bar{
+    width: 90%;
+    padding: 0.3em;
+    margin: 0.3em 0 0.3em 0;
+    background-color: white;
+}
+.role-user,
+.role-assistant,
+.role-system {
+  padding: 5px 5px 10px 10px;
+  margin: 5px;
+  border-radius: 5px;
+  background-color: #ffffff21;
+  margin-bottom: 1em;
+  border: 1px solid black;
+  border-width: 0 0 6px 3px;
+}
+.role-assistant {
+  color: greenyellow;
+  border-color: greenyellow;
+}
+.role-user {
+  color: white;
+  border-color: white;
+}
+.role-system {
+  color: #ff7f00;
+  border-color: #ff7f00;
+}
