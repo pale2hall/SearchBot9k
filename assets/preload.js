@@ -13,4 +13,13 @@ contextBridge.exposeInMainWorld('electron', {
   onUpdateURL: (callback) => {
     ipcRenderer.on('update-URL', callback);
   },
+  onUpdateTokenUsage: (callback) => {
+    ipcRenderer.on('update-token-usage', callback);
+  },
+  onUpdateWebActivity: (callback) => {
+    ipcRenderer.on('update-web-activity', callback);
+  },
+  onUpdateSetHTML: (callback) => {
+    ipcRenderer.on('update-set-HTML', callback);
+  },
 });

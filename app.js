@@ -3,6 +3,14 @@ const puppeteer = require("puppeteer");
 require("dotenv").config();
 const { app, BrowserWindow } = require("electron");
 
+//Todo use a class or function?
+// declate 3 global variables all set to 0
+const tokensUsed = {
+  prompt_tokens: 0,
+  completion_tokens: 0,
+  total_tokens: 0,
+}
+
 // These should be commented out in .env if you don't want to use them.
 if (process.env.DBUG || process.env.OFFLINE)
   console.log(
@@ -30,10 +38,18 @@ async function chatGPT(messages) {
       }
     );
 
-  const response = await retryAxiosRequest(requestFn);
 
+
+  const response = await retryAxiosRequest(requestFn);
   const mainWindow = BrowserWindow.getAllWindows()[0];
-  // mainWindow.webContents.send('update-messages', messages);
+  // outputs to console and returns as string.
+  let usage =  updateAndDisplayTokensUsed(response.data.usage);
+  
+  mainWindow.webContents.send("update-set-HTML", {
+    id: "token-usage",
+    html: usage,
+  });
+
 
   return response.data.choices[0].message.content;
 }
@@ -51,20 +67,14 @@ async function googleSearch(query) {
         const anchor = link.parentElement.parentElement.querySelector("a");
         if (anchor) {
           const url = anchor.href;
-          // TODO remove domain, it's not necessary as the AI can figure it out from URL.
-          let domain;
-          try {
-            domain = new URL(url).hostname;
-          } catch (error) {
-            console.error("Invalid URL:", url);
-            domain = null;
-          }
-          return { title: link.innerText, url, domain };
+          if (link.innerText) return { title: link.innerText, url };
+          return { url };
+
         } else {
           return null;
         }
       })
-      .filter((link) => link !== null && link.domain !== null);
+      .filter((link) => link !== null);
   });
 
   const content = await page.evaluate(() => {
@@ -96,18 +106,10 @@ async function getPageContent(url) {
     return Array.from(linkNodes)
       .map((link) => {
         const url = link.href;
-        let domain;
-        try {
-          domain = new URL(url).hostname;
-        } catch (error) {
-          console.error("Invalid URL:", url);
-          domain = null;
-        }
-        return { title: link.innerText, url, domain };
+        if (link.innerText) return { title: link.innerText, url };
+        return { url };
       })
-      .filter(
-        (link) => link !== null && link.url !== "" && link.domain !== null
-      );
+      .filter((link) => link !== null && link.url !== "");
   });
 
   screenshot = await page.screenshot({ encoding: "base64" });
@@ -120,6 +122,38 @@ async function getPageContent(url) {
 function loadWebPageImage(base64Image) {
   const mainWindow = BrowserWindow.getAllWindows()[0];
   mainWindow.webContents.send("update-webpage-image", base64Image);
+}
+
+function updateAndDisplayTokensUsed(usage) {
+
+
+  tokensUsed.total_tokens += usage.total_tokens;
+  tokensUsed.prompt_tokens += usage.prompt_tokens;
+  tokensUsed.completion_tokens += usage.prompt_tokens;
+  
+  let status_bar = `Total Tokens Used: ${tokensUsed.total_tokens} `;
+  let output = `==== TOKEN USAGE ==== \nTotal Tokens Used: ${tokensUsed.total_tokens} `
+    + `(Prompt: ${tokensUsed.prompt_tokens}, Completion: ${tokensUsed.completion_tokens})`;
+
+
+  if (process.env.MODEL_PRICE_PER_TOKEN_PROMPT) {
+
+    let prompt_cost = tokensUsed.prompt_tokens * process.env.MODEL_PRICE_PER_TOKEN_PROMPT;
+    let completion_cost = tokensUsed.completion_tokens * process.env.MODEL_PRICE_PER_TOKEN_COMPLETION;
+    let total_cost = prompt_cost + completion_cost;
+
+    prompt_cost = (prompt_cost / 1000).toFixed(2);
+    completion_cost = (completion_cost / 1000).toFixed(2);
+    total_cost = (total_cost / 1000).toFixed(2);
+
+    output += `\nTotal Costs: \$${total_cost} `
+      + `(Prompt: \$${prompt_cost}, Completion: \$${completion_cost})\n\n`;
+      status_bar += ` ( \$${total_cost} )`;
+  }
+  console.log(output);
+  //return less verbose version to use as status bar.
+  return status_bar;
+
 }
 
 async function createWindow() {
@@ -205,7 +239,7 @@ async function createWindow() {
           `Here's the content of the page:\n
               ${serp.content}
           \n\n
-              Here are the search results:\n${JSON.stringify(serp.links)}`;
+              Here are the search results:\n${formatLinksForChat(serp.links)}`;
       } else if (jsonResponse.navigate) {
         mainWindow.webContents.send("update-URL", jsonResponse.navigate);
         urlHistory.push(jsonResponse.navigate); // Add the visited URL to the history
@@ -216,10 +250,9 @@ async function createWindow() {
           `Here is the first 2000 chars text on the page:\n${truncate(
             pageData.content,
             2000
-          )}\n\nHere are the first 1000 chars of links on the page:\n${truncate(JSON.stringify(
-            // TODO, actually parse the links and remove duplicates
+          )}\n\nHere are the first 1000 chars of links on the page:\n${truncate(formatLinksForChat(
+            // TODO 
             // Then remove any links that are in the urlHistory
-            // Then remove empty titles and text.
             pageData.links
           ), 1000)}`;
       } else {
@@ -270,6 +303,18 @@ function truncate(text, maxLength) {
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+function formatLinksForChat(links) {
+  let formattedLinks = "";
+  links.forEach((link) => {
+    if (link.title === "") {
+      formattedLinks += `\n- ${link.url}`;
+    }
+    formattedLinks += `\n- ${link.title} - ${link.url}`;
+  });
+  return formattedLinks + "\n\n";
+}
+
 async function retryAxiosRequest(requestFn, maxRetries = 3) {
   let retries = 0;
   let result;
