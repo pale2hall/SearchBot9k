@@ -1,3 +1,5 @@
+**Psst! Try ChatGPT with it, it's way cheaper, and it seems to work from initial testing!**
+
 # SearchBot9k
 
 ![SearchBot9k Logo](https://i.imgur.com/u1eQqmq.png)
