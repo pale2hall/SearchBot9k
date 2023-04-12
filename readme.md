@@ -9,7 +9,7 @@ _Please note that the application might sometimes get into loops, and not all er
 
 Contributions are welcome! Feel free to submit pull requests to help improve the project.
 
-![SearchBot9k Demo](https://i.imgur.com/hLiz5i0.png)
+![SearchBot9k Demo](https://i.imgur.com/ObtgpCM.png)
 
 ## Demo Video
 
