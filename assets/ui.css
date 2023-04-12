@@ -1,18 +1,18 @@
-
 html,
 body {
   justify-content: space-between;
   position: relative;
-  background-color: #008080; /* Windows 95 green background */
+  background-color: #008080;
+  /* Windows 95 green background */
   width: 100%;
   height: 100%;
   overflow: hidden;
   font-family: "MS Sans Serif", 'Microsoft Sans Serif', Geneva, sans-serif;
 }
 
-#right-pane , #left-pane {
+#right-pane,
+#left-pane {
   max-width: 70vw;
-  max-height: 70vh;
   z-index: 1;
 }
 
@@ -31,14 +31,13 @@ body {
 }
 
 #right-pane {
+  max-height: 70vh;
   margin-left: 20px;
-  color: lime; /* Green text color */
+  color: lime;
+  /* Green text color */
   position: absolute;
   top: 25vh;
   left: 25vw;
-  background-color: #C0C0C0;
-  padding: 5px;
-  padding-bottom: 1em;
 }
 
 pre {
@@ -47,90 +46,134 @@ pre {
 }
 
 #left-pane img {
-  /* resize image so it fits within the height and width but is as wide or tall as possible without chanigg aspect ratio */
   max-width: 100%;
   max-height: 100%;
   width: auto;
   height: auto;
-  box-sizing: border-box; /* Include border in the element's dimensions */
+  box-sizing: border-box;
   background-color: #222;
   background-size: 50% 50%;
   background-position: center;
 }
-#url,
-.title-bar {
-  background-color: #000080;
-  color: white;
-  font-weight: bold;
-}
+
 #messages {
-  background-color: #000;
-  color: greenyellow;
   margin-right: 14px;
-  max-height: 55vh;
   overflow-y: scroll;
+  max-height: 60vh;
 }
-#address_bar{
-    width: 90%;
-    padding: 0.3em;
-    margin: 0.3em 0 0.3em 0;
-    background-color: white;
+
+#address-bar {
+  width: 90%;
+  padding: 0.3em;
+  margin: 0.3em 0 0.3em 0;
+  background-color: white;
 }
-#browser,
-#right-pane {
-  background-color: #C0C0C0;
+
+#browser {
   padding: 5px;
   padding-bottom: 1em;
 }
-.role-user,
-.role-assistant,
-.role-system {
-  padding: 5px 5px 10px 10px;
+
+.message {
+  padding: 2.5em 5px 10px 10px;
   margin: 5px;
   border-radius: 5px;
-  background-color: #ffffff21;
+  background-color: #000000EE;
   margin-bottom: 1em;
   border: 1px solid black;
-  border-width: 0 0 6px 3px;
+  border-width: 0 0 6px 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  position: relative;
 }
+
+.message:hover {
+  background-color: black;
+}
+
 .role-assistant {
   color: greenyellow;
   border-color: greenyellow;
 }
+
 .role-user {
   color: white;
   border-color: white;
 }
+
 .role-system {
   color: #ff7f00;
   border-color: #ff7f00;
 }
-#answer{
-    width: 60vw;
-    height: 20vh;
-    position: absolute;
-    top: 40vh;
-    left: 20vw;
-    z-index: -9000;
-    padding: 3px;
-    border: 1px solid black;
-    background-color: #C0C0C0;
-    box-shadow: 2px 2px 1px rgba(0, 0, 0, 0.5);
+
+.badge {
+  position:absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  border-radius: 0 0 5px 0;
+  padding:.3em;
+  color:black;
+  opacity: .5;
+}
+.message:hover .badge{
+  opacity:1;
 }
 
-  #answer .title-bar {
-    background-color: #000080;
-    color: #FFFFFF;
-    padding: 3px 5px;
-    font-weight: bold;
-    font-size: 12px;
-  }
+.badge-assistant {
+  background-color: greenyellow;
+}
 
-  #answer * .content {
-    padding: 10px;
-    font-size: 12px;
-    text-align: center;
-    height:89%;
-    overflow-y:scroll;
-    width:100%;
-  }
+.badge-system {
+  background-color: #ff7f00;
+}
+
+#answer {
+  width: 60vw;
+  height: 20vh;
+  position: absolute;
+  top: 40vh;
+  left: 20vw;
+  z-index: -9000;
+  overflow-y: scroll;
+}
+
+#answer-text {
+  overflow-y: scroll;
+  max-height: 15vh;
+}
+
+
+/* Basic windows 95 style window decoration */
+.window {
+  border: 1px solid #828282;
+  border-top-color: white;
+  border-left-color: white;
+  background-color: #C0C0C0;
+  padding: 2px;
+  padding-bottom: 1em;
+  box-shadow: 1px 1px 0px #000000;  
+  box-shadow: -1px -1px 0px 1px #828282;
+
+}
+
+.window-title {
+  background-color: #000080;
+  color: #FFFFFF;
+  padding: 5px 9px;
+  font-weight: bold;
+  border: 1px solid #c3c3c3;
+}
+
+.window .content {
+  padding: 10px;
+}
+
+.button{
+  border:1px solid #828282;
+  border-top:1px solid white;
+  border-left: 1px solid white;
+  box-shadow: 1px 1px 0px #000000;
+
+}

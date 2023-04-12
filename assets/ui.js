@@ -8,7 +8,7 @@ window.electron.onUpdateMessages((_, messages) => {
   document.getElementById("messages").innerHTML = messages
     .map(
       (message) =>
-        `<div class="role-${message.role}">${message.role}: ${message.content}</div>`
+        `<div class="message role-${message.role}"><div class="badgebadge-${message.role}">${message.role}</div>${message.content}</div>`
     )
     .join("");
   scrollToBottom();
@@ -20,27 +20,21 @@ window.electron.onUpdateWebPageImage((_, base64Image) => {
   ).src = `data:image/png;base64,${base64Image}`;
 });
 
-window.electron.onUpdateURL((_, url) => {
-  document.getElementById("address_bar").value = url;
-});
-
 window.electron.onUpdateAnswer((_, answer) => {
   document.getElementById("answer-text").innerHTML = answer;
   document.getElementById("answer").style.zIndex = 9001;
 });
 
-// Catch upates of the token usage
-window.electron.onUpdateTokenUsage((_, tokenUsage) => {
-  document.getElementById("token-usage").innerHTML = tokenUsage;
+window.electron.onUpdateSetText((_, update) => {
+  const element = document.getElementById(update.id);
+  if (element) {
+    element.innerHTML = update.text;
+  } else {
+    console.log(
+      `Element with id '${update.id}' not found in the DOM.` +
+      `Unable to update text to: '${update.text}'`
+      );
+    
+  }
 });
-
-// Catch upates of the web activity
-window.electron.onUpdateWebActivity((_, webActivity) => {
-  document.getElementById("web-activity").innerHTML = webActivity;
-});
-// Catch upates of the web activity
-window.electron.onUpdateSetHTML((_, update) => {
-  document.getElementById(update.id).innerHTML = update.html;
-});
-
 

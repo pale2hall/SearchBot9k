@@ -3,6 +3,14 @@ const puppeteer = require("puppeteer");
 require("dotenv").config();
 const { app, BrowserWindow } = require("electron");
 
+// for puppeteer
+let browser, page;
+
+// for electron
+let mainWindow;
+
+let initialQuestion;
+
 //Todo use a class or function?
 // declate 3 global variables all set to 0
 const tokensUsed = {
@@ -41,13 +49,12 @@ async function chatGPT(messages) {
 
 
   const response = await retryAxiosRequest(requestFn);
-  const mainWindow = BrowserWindow.getAllWindows()[0];
   // outputs to console and returns as string.
   let usage =  updateAndDisplayTokensUsed(response.data.usage);
   
-  mainWindow.webContents.send("update-set-HTML", {
+  mainWindow.webContents.send("update-set-text", {
     id: "token-usage",
-    html: usage,
+    text: usage,
   });
 
 
@@ -55,10 +62,12 @@ async function chatGPT(messages) {
 }
 
 async function googleSearch(query) {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
   let url = `https://google.com/search?q=${query}`;
-  await page.goto(url);
+  try {
+    await page.goto(url);
+  } catch (error) {
+    console.error('Error navigating to page:', error);
+  }
 
   const links = await page.evaluate(() => {
     const linkNodes = document.querySelectorAll(".tF2Cxc h3, .card-section");
@@ -83,21 +92,23 @@ async function googleSearch(query) {
 
   const screenshot = await page.screenshot({ encoding: "base64" });
   loadWebPageImage(screenshot);
-  await browser.close();
   return { links, content };
 }
 
 async function getPageContent(url) {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1024, height: 768 });
-  await page.goto(url, { waitUntil: "networkidle2" });
+  
+  try {
+    await page.goto(url, { waitUntil: "networkidle2" });
+  } catch (error) {
+    console.error('Error navigating to page:', error);
+  }
 
   let screenshot = await page.screenshot({ encoding: "base64" });
 
   loadWebPageImage(screenshot);
 
   const content = await page.evaluate(() => {
+    // Super lazy way to get the text content of the page.  TODO FIX
     return document.documentElement.innerText;
   });
 
@@ -113,14 +124,12 @@ async function getPageContent(url) {
   });
 
   screenshot = await page.screenshot({ encoding: "base64" });
-  await browser.close();
   loadWebPageImage(screenshot);
 
   return { content, links };
 }
 
 function loadWebPageImage(base64Image) {
-  const mainWindow = BrowserWindow.getAllWindows()[0];
   mainWindow.webContents.send("update-webpage-image", base64Image);
 }
 
@@ -157,12 +166,21 @@ function updateAndDisplayTokensUsed(usage) {
 }
 
 async function createWindow() {
+
+  
+  browser = await puppeteer.launch({ headless: true });
+  page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 800 });
+
+
   const urlHistory = [];
   const memories = [];
   let fullMessageLog = [];
 
+  initialQuestion = process.argv[2];
+  
   try {
-    const mainWindow = new BrowserWindow({
+     mainWindow = new BrowserWindow({
       width: 1200,
       height: 800,
       webPreferences: {
@@ -171,14 +189,17 @@ async function createWindow() {
         preload: `${__dirname}/assets/preload.js`,
       },
     });
+    
 
-    mainWindow.loadFile("index.html");
+    await mainWindow.loadFile("index.html");
+    mainWindow.setTitle(`SearchBot9k - ${initialQuestion}`);
+
     if (process.env.DBUG || process.env.OFFLINE || process.env.DEVTOOLS)
       mainWindow.webContents.openDevTools();
     mainWindow.webContents.on("context-menu", (e) => e.preventDefault());
 
-    const initialQuestion = process.argv[2];
-    memories.push("Initial Qusetion: " + initialQuestion);
+   
+    memories.push("Initial Question: " + initialQuestion);
 
     let messages = [
       {
@@ -195,7 +216,7 @@ async function createWindow() {
       let gptResponse = "";
       if (process.env.OFFLINE) {
         gptResponse = await Promise.resolve(
-          '{"search": "how to make a chatbot"}'
+          '{"navigate": "https://github.com/pale2hall/searchbot9k"}'
         );
         answered = true;
       } else {
@@ -230,7 +251,10 @@ async function createWindow() {
         // search a new query
         let url = `https://google.com/search?q=${jsonResponse.search}`;
         urlHistory.push(url);
-        mainWindow.webContents.send("update-URL", url);
+        mainWindow.webContents.send("update-set-text", {
+          id: "address-bar",
+          text: url,
+        });
         console.log(`New search phrase: ${jsonResponse.search}`);
         // TODO loading animation
         const serp = await googleSearch(jsonResponse.search);
@@ -241,7 +265,12 @@ async function createWindow() {
           \n\n
               Here are the search results:\n${formatLinksForChat(serp.links)}`;
       } else if (jsonResponse.navigate) {
-        mainWindow.webContents.send("update-URL", jsonResponse.navigate);
+
+        mainWindow.webContents.send("update-set-text", {
+          id: "address-bar",
+          text: jsonResponse.navigate,
+        });
+
         urlHistory.push(jsonResponse.navigate); // Add the visited URL to the history
         console.log(`Link: ${jsonResponse.navigate}`);
         const pageData = await getPageContent(jsonResponse.navigate);
@@ -288,9 +317,13 @@ async function createWindow() {
 
       mainWindow.webContents.send("update-messages", fullMessageLog);
     }
+    
+  await browser.close();
+
   } catch (error) {
     console.error("Error:", error);
   }
+  
 }
 
 function truncate(text, maxLength) {
@@ -315,7 +348,7 @@ function formatLinksForChat(links) {
   return formattedLinks + "\n\n";
 }
 
-async function retryAxiosRequest(requestFn, maxRetries = 3) {
+async function retryAxiosRequest(requestFn, maxRetries = 4) {
   let retries = 0;
   let result;
   let success = false;
@@ -325,7 +358,9 @@ async function retryAxiosRequest(requestFn, maxRetries = 3) {
       result = await requestFn();
       success = true;
     } catch (error) {
+      console.log(`Retry ${retries + 1} failed: ${error.message}`);
       if (error.response && error.response.status === 429) {
+        console.log(error.response.data.error);
         retries++;
         await sleep(Math.pow(2, retries) * 1000); // Exponential backoff
       } else {
@@ -335,7 +370,7 @@ async function retryAxiosRequest(requestFn, maxRetries = 3) {
   }
 
   if (!success) {
-    throw new Error("Request failed after maximum retries");
+    throw new Error(`Request failed after ${retries} retries. `);
   }
 
   return result;

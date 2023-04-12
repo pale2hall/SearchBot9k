@@ -10,16 +10,8 @@ contextBridge.exposeInMainWorld('electron', {
   onUpdateAnswer: (callback) => {
     ipcRenderer.on('update-answer', callback);
   },
-  onUpdateURL: (callback) => {
-    ipcRenderer.on('update-URL', callback);
+  onUpdateSetText: (callback) => {
+    ipcRenderer.on('update-set-text', callback);
   },
-  onUpdateTokenUsage: (callback) => {
-    ipcRenderer.on('update-token-usage', callback);
-  },
-  onUpdateWebActivity: (callback) => {
-    ipcRenderer.on('update-web-activity', callback);
-  },
-  onUpdateSetHTML: (callback) => {
-    ipcRenderer.on('update-set-HTML', callback);
-  },
+
 });
