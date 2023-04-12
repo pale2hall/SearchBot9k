@@ -17,6 +17,7 @@ Contributions are welcome! Feel free to submit pull requests to help improve the
 
 - You will need access to the GPT-4 or ChatGPT API.
 - Node.js and npm installed on your system.
+- Linux, Windows or MacOS - Tested on all 3.  *See note below for Windows*
 
 ## Installation
 
@@ -56,6 +57,7 @@ Pull requests are welcome! If you have any ideas for improvements, bug fixes, or
 
 - The application might sometimes get into loops.
 - Not all errors are handled yet, and the code could use a refactor.
+- On Windows puppeteer needs an extra hand to get intially installed. I had to run `node node_modules/puppeteer/install.js` after `npm i` to get it fully installed.
 
 ## Larry's Lazy License
 
