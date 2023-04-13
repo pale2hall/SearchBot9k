@@ -3,6 +3,16 @@ const puppeteer = require("puppeteer");
 require("dotenv").config();
 const { app, BrowserWindow } = require("electron");
 
+let gptEncoder;
+
+// This is probably dumb, and an indication that 
+// I'm not primarily a js dev...
+// If there's a better way, LMK.
+async function loadEncoderModule() {
+  const { encode: importedEncode, decode: importedDecode } = await import('gpt-token-utils');
+  gptEncoder = importedEncode;
+}
+
 // for puppeteer
 let browser, page;
 
@@ -171,6 +181,7 @@ async function createWindow() {
   browser = await puppeteer.launch({ headless: true });
   page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
+  await loadEncoderModule();
 
 
   const urlHistory = [];
@@ -274,16 +285,15 @@ async function createWindow() {
         urlHistory.push(jsonResponse.navigate); // Add the visited URL to the history
         console.log(`Link: ${jsonResponse.navigate}`);
         const pageData = await getPageContent(jsonResponse.navigate);
+        let pageContent = pageData.content;
+        pageContent = truncateMaxTokens(pageContent, 750);
         next_message =
           next_message +
-          `Here is the first 2000 chars text on the page:\n${truncate(
-            pageData.content,
-            2000
-          )}\n\nHere are the first 1000 chars of links on the page:\n${truncate(formatLinksForChat(
-            // TODO 
-            // Then remove any links that are in the urlHistory
+          `Here is the first 500 tokens chars text on the page:\n${pageContent}`
+          +`\n\nHere are the first 500 tokens of links on the page:\n${
+            truncateMaxTokens(formatLinksForChat(
             pageData.links
-          ), 1000)}`;
+           ), 750)}`;
       } else {
         console.log("Unknown response", jsonResponse);
       }
@@ -324,6 +334,22 @@ async function createWindow() {
     console.error("Error:", error);
   }
   
+}
+
+function truncateMaxTokens(content, max_tokens){
+  // 15 is way over avg char / token, but it's a good starting point
+  let max_char_count = max_tokens*15;
+  content = truncate(content, max_char_count);
+  let tokens = gptEncoder(content);
+  let token_count = max_tokens+1;
+  while( token_count > max_tokens ){
+    let multiplier_to_lower_tokens = (max_tokens / token_count);
+    max_char_count = multiplier_to_lower_tokens * max_char_count * .95;
+    content = truncate(content, max_char_count);
+    tokens = gptEncoder(content);
+    token_count = tokens.length;
+  }
+  return content;
 }
 
 function truncate(text, maxLength) {
