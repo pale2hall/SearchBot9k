@@ -10,8 +10,18 @@ contextBridge.exposeInMainWorld('electron', {
   onUpdateAnswer: (callback) => {
     ipcRenderer.on('update-answer', callback);
   },
+  onUpdateSetVal: (callback) => {
+    ipcRenderer.on('update-set-val', callback);
+  },
   onUpdateSetText: (callback) => {
     ipcRenderer.on('update-set-text', callback);
   },
+  togglePauseAI: (pauseState) => {
+    ipcRenderer.send('pause', pauseState);
+  },
+  askAI: (request) => {
+    ipcRenderer.send('ask-ai', request);
+  }
+
 
 });

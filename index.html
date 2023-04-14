@@ -9,18 +9,26 @@
   <body>
     <div id="left-pane" class="window">
       <div class="window-title">ChatGPT's Web Browser</div>
+      <div class="toolbar">
+        <button id="pause-ai" class="button" onclick="togglePauseAI()">Pause AI</button>
+        <input type="text" id="address-bar" class="address-bar" disabled value="http://loading..." />
+      </div>
       <div id="browser" class="content">
-        <input type="text" id="address-bar" class="address-bar" disabled value="http://loading..." /><br>
+       
         <img id="webpage-image" src="./assets/loading.png" alt="Web page screenshot" />
       </div>
       <div class="status-bar">
         <span id="web-activity"></span>
         <span id="token-usage"></span>
       </div>
+      <div class="resize-handle"></div>
     </div>
     <div id="right-pane" class="window">
       <div class="window-title">
         <img src="./assets/spinner.gif" style="height: 1.5em; width: auto" /> ChatGPT Message Log
+      </div>
+      <div class="toolbar">
+        <button id="toggleAutoScrollButton" class="button" onclick="toggleAutoScroll()">Toggle Autoscroll</button>
       </div>
       <div class="content">
         <div id="messages">
@@ -30,10 +38,16 @@
           </div>
         </div>
       </div>
+      <div class="status-bar">
+        Autoscroll <span id="autoscroll-status"></span>
+      </div>
+      <div class="resize-handle"></div>
     </div>
     <div id="answer" class="window">
       <div class="window-title">Answer</div>
       <div id="answer-text" class="content"></div>
+      <button id="please-continue" class="button" onclick="askAI('CONTINUE')">Please Continue</button>
+      <div class="resize-handle"></div>
     </div>
   </body>
 </html>

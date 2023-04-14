@@ -2,6 +2,8 @@
 googgpt.ai
 package-lock.json
 .DS_Store
+tmp.*
+*.tmp
 
 # Logs
 logs
