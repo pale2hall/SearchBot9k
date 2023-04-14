@@ -13,7 +13,7 @@ Contributions are welcome! Feel free to submit pull requests to help improve the
 
 ## Demo Video
 
-[![Demo Video (No narration)](http://img.youtube.com/vi/hdYn2XcSAek/0.jpg)](http://www.youtube.com/watch?v=hdYn2XcSAek "Demo Video")
+[![Demo Video (No narration)](http://img.youtube.com/vi/kfe_zgTf8GY/0.jpg)](http://www.youtube.com/watch?v=kfe_zgTf8GY "Demo Video")
 
 ## Prerequisites
 
